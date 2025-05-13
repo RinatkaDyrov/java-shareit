@@ -10,12 +10,13 @@ import ru.practicum.shareit.item.model.Item;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
-    private static ItemDto mapToItemDto(Item item) {
+    public static ItemDto mapToItemDto(Item item) {
         return new ItemDto(
+                item.getId(),
                 item.getName(),
                 item.getDescription(),
-                item.isAvailable(),
-                item.getRequest() != null ? item.getRequest().getId() : null
+                item.getAvailable(),
+                item.getRequest() != null ? item.getRequest() : null
         );
     }
 

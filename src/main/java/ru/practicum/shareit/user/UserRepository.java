@@ -1,36 +1,49 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.common.BaseRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
-public class UserRepository extends BaseRepository<User> {
-
-    private static final String FIND_ALL = "SELECT * FROM users";
-    private static final String FIND_BY_ID = "SELECT * FROM users WHERE id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO users(name, email)" +
-            "VALUES (?, ?)";
-
-    public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
-        super(jdbc, mapper);
-    }
+public class UserRepository {
+    private final Map<Long, User> usersMap = new HashMap<>();
 
     public Collection<User> findAll() {
-        return findMany(FIND_ALL);
+        return usersMap.values();
     }
 
     public Optional<User> findById(long userId) {
-        return findOne(FIND_BY_ID, userId);
+        return Optional.of(usersMap.get(userId));
     }
 
     public User create(User user) {
-        long id = insert(INSERT_QUERY, user.getName(), user.getEmail());
-        user.setId(id);
+        User newUser = new User();
+        newUser.setId(getNextId());
+        newUser.setName(user.getName());
+        newUser.setEmail(user.getEmail());
+        usersMap.put(newUser.getId(), newUser);
+        return newUser;
+    }
+
+    public long getNextId() {
+        long currentMaxId = usersMap.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++currentMaxId;
+    }
+
+    public User update(long userId, User user) {
+        usersMap.put(userId, user);
         return user;
+    }
+
+    public void delete(long userId) {
+        usersMap.remove(userId);
     }
 }
