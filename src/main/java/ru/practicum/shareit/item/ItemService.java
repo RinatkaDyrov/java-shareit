@@ -3,11 +3,13 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.common.Validator;
+import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +23,6 @@ public class ItemService {
                 .filter(item -> item.getOwner().equals(userId))
                 .map(ItemMapper::mapToItemDto)
                 .toList();
-
     }
 
     public ItemDto findItem(Long itemId) {
@@ -30,23 +31,27 @@ public class ItemService {
 
     public Collection<ItemDto> searchItems(String text) {
         Collection<Item> result = itemRepository.findAllItems();
-        return result.stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().matches(text) || item.getDescription().matches(text))
-                .map(ItemMapper::mapToItemDto)
-                .toList();
+        return text.isEmpty() ? Collections.emptyList() :
+                result.stream()
+                        .filter(Item::getAvailable)
+                        .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) ||
+                                item.getDescription().toLowerCase().contains(text.toLowerCase()))
+                        .map(ItemMapper::mapToItemDto)
+                        .toList();
     }
 
     public ItemDto create(Item item, Long userId) {
-        validator.itemValidation(item.getId());
-        validator.userValidation(userId);
-        return ItemMapper.mapToItemDto(itemRepository.create(item, userId));
+        if (!validator.isUserExist(userId)) {
+            throw new NotFoundException("Пользователя с таким ID не существует");
+        }
+        Item newItem = itemRepository.create(item, userId);
+        return ItemMapper.mapToItemDto(newItem);
     }
 
     public ItemDto updateItem(Long userId, Long itemId, Item item) {
         Item updItem = itemRepository.findItemById(itemId);
         if (!updItem.getOwner().equals(userId)) {
-            throw new RuntimeException("Вносить изменения в поля может только владелец");
+            throw new NotFoundException("Вносить изменения в поля может только владелец");
         }
         if (item.getName() != null) {
             updItem.setName(item.getName());
@@ -62,7 +67,6 @@ public class ItemService {
     }
 
     public void deleteItem(Long itemId) {
-        validator.removeItem(itemId);
         itemRepository.delete(itemId);
     }
 }

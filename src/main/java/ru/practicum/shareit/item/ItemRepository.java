@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.common.Validator;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.Collection;
@@ -8,8 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Repository
+@RequiredArgsConstructor
 public class ItemRepository {
     private final Map<Long, Item> items = new HashMap<>();
+    private final Validator validator;
 
     public Collection<Item> findAllItems() {
         return items.values();
@@ -29,6 +33,7 @@ public class ItemRepository {
         newItem.setOwner(userId);
         newItem.setRequest(item.getRequest());
         items.put(newItem.getId(), newItem);
+        validator.trackNewItem(newItem.getId());
         return newItem;
     }
 
@@ -47,5 +52,6 @@ public class ItemRepository {
 
     public void delete(Long itemId) {
         items.remove(itemId);
+        validator.removeItem(itemId);
     }
 }

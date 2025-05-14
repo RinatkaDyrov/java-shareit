@@ -10,7 +10,6 @@ import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -18,14 +17,15 @@ import java.util.Set;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final Set<String> usedEmails;
     private final Validator validator;
 
     public Collection<UserDto> findAll() {
         log.debug("Поиск всех пользователей");
-        return userRepository.findAll().stream().map(UserMapper::mapToUserDto).toList();
+        return userRepository.findAll()
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
-
 
     public UserDto findById(long userId) {
         log.debug("Поиск пользователя с ID: {}", userId);
@@ -36,9 +36,7 @@ public class UserService {
 
     public UserDto create(User user) {
         log.debug("Создание пользователя {}", user);
-        validator.userValidation(user.getId());
-        boolean success = usedEmails.add(user.getEmail());
-        if (!success) {
+        if (validator.isEmailExist(user.getEmail())) {
             throw new RuntimeException("Данный имейл уже используется");
         }
         User newUser = userRepository.create(user);
@@ -53,12 +51,11 @@ public class UserService {
             updUser.setName(user.getName());
         }
         if (user.getEmail() != null) {
-            if (usedEmails.contains(user.getEmail())) {
-                throw new RuntimeException("Данный имейл уже используется");
+            if (validator.isEmailExist(user.getEmail())) {
+                throw new IllegalStateException("Данный имейл уже используется");
             }
-            usedEmails.remove(updUser.getEmail());
+            validator.updateEmail(updUser.getEmail(), user.getEmail());
             updUser.setEmail(user.getEmail());
-            usedEmails.add(updUser.getEmail());
         }
         userRepository.update(userId, user);
         return UserMapper.mapToUserDto(updUser);
@@ -66,11 +63,9 @@ public class UserService {
 
     public void deleteUserById(long userId) {
         log.debug("Удаление пользователя с ID: {}", userId);
-        validator.removeUser(userId);
         User userForDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
-        usedEmails.remove(userForDelete.getEmail());
+        validator.removeUser(userForDelete);
         userRepository.delete(userId);
     }
-
 }

@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.common.Validator;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
@@ -9,8 +11,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class UserRepository {
     private final Map<Long, User> usersMap = new HashMap<>();
+    private final Validator validator;
 
     public Collection<User> findAll() {
         return usersMap.values();
@@ -26,6 +30,7 @@ public class UserRepository {
         newUser.setName(user.getName());
         newUser.setEmail(user.getEmail());
         usersMap.put(newUser.getId(), newUser);
+        validator.trackNewUser(newUser);
         return newUser;
     }
 
