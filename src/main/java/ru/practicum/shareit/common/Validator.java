@@ -24,7 +24,7 @@ public class Validator {
         if (isUserExist(user.getId())) {
             throw new IllegalStateException("Пользователь с таким ID уже существует");
         }
-        if (isEmailExist(user.getEmail())){
+        if (isEmailExist(user.getEmail())) {
             throw new IllegalStateException("Пользователь с таким имейлом уже существует");
         }
         existingUsers.add(user.getId());
