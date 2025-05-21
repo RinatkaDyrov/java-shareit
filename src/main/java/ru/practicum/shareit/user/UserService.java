@@ -39,7 +39,7 @@ public class UserService {
         if (validator.isEmailExist(user.getEmail())) {
             throw new RuntimeException("Данный имейл уже используется");
         }
-        User newUser = userRepository.create(user);
+        User newUser = userRepository.save(user);
         return UserMapper.mapToUserDto(newUser);
     }
 
@@ -57,7 +57,7 @@ public class UserService {
             validator.updateEmail(updUser.getEmail(), user.getEmail());
             updUser.setEmail(user.getEmail());
         }
-        userRepository.update(userId, user);
+        userRepository.save(updUser);
         return UserMapper.mapToUserDto(updUser);
     }
 
@@ -66,6 +66,6 @@ public class UserService {
         User userForDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         validator.removeUser(userForDelete);
-        userRepository.delete(userId);
+        userRepository.delete(userForDelete);
     }
 }
