@@ -10,7 +10,7 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "rents")
+@Table(name = "bookings")
 @Getter @Setter @ToString(exclude = {"booker", "item"})
 public class Booking {
     @Id

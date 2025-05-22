@@ -19,7 +19,7 @@ public class ItemRequest {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "requestor_id")
     private User requestor;
 
     private LocalDateTime created;

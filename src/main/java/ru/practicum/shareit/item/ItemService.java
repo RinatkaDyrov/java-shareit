@@ -8,6 +8,7 @@ import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -36,15 +37,7 @@ public class ItemService {
     }
 
     public Collection<ItemDto> searchItems(String text) {
-        Collection<Item> result = itemRepository.findAll();
-
-        return text.isEmpty() ? Collections.emptyList() :
-                result.stream()
-                        .filter(Item::getAvailable)
-                        .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) ||
-                                item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                        .map(ItemMapper::mapToItemDto)
-                        .toList();
+        return itemRepository.search(text);
     }
 
     @Transactional

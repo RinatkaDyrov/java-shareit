@@ -19,8 +19,6 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String text;
 
-    private LocalDateTime created;
-
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
