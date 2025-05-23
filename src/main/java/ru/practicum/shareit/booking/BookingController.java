@@ -22,20 +22,20 @@ public class BookingController {
 
     @PatchMapping("/{bookingId}")
     public BookingDto approveBooking(@RequestParam String approved,
-                               @RequestHeader("X-Sharer-User-Id") Long userId,
-                               @PathVariable Long bookingId) {
+                                     @RequestHeader("X-Sharer-User-Id") Long userId,
+                                     @PathVariable Long bookingId) {
         return bookingService.approvedBooking(userId, bookingId, approved);
     }
 
     @GetMapping("/{bookingId}")
     public BookingDto findBookingById(@PathVariable Long bookingId,
-                                   @RequestHeader("X-Sharer-User-Id") Long userId) {
+                                      @RequestHeader("X-Sharer-User-Id") Long userId) {
         return bookingService.findBookingById(bookingId, userId);
     }
 
     @GetMapping
     public Collection<BookingDto> findBookingsByUserAndState(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                                 @RequestParam(defaultValue = "ALL") String state) {
+                                                             @RequestParam(defaultValue = "ALL") String state) {
         return bookingService.findBookingByUserAndState(userId, state);
     }
 

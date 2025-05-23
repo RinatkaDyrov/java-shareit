@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.mapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.Bag;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -39,6 +38,18 @@ public class ItemMapper {
                 item.getAvailable(),
                 lastBooking,
                 nextBooking,
+                comments != null ? comments : List.of()
+        );
+    }
+
+    public static ItemDto mapToItemDtoWithoutBookings(Item item, List<CommentDto> comments) {
+        return new ItemDto(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                null,
+                null,
                 comments != null ? comments : List.of()
         );
     }

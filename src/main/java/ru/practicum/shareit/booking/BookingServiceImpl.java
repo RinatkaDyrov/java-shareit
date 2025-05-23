@@ -30,12 +30,12 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Указаны неверные даты бронирования");
         }
         Item item = itemRepository.findById(request.getItemId())
-                .orElseThrow(() ->  new NotFoundException("Вещь с данным ID не найдена"));
-        if (!item.getAvailable()){
+                .orElseThrow(() -> new NotFoundException("Вещь с данным ID не найдена"));
+        if (!item.getAvailable()) {
             throw new RuntimeException("Данная вещь уже забронирована");
         }
         User booker = userRepository.findById(userId)
-                .orElseThrow(() ->  new NotFoundException("Пользователь с данным ID не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
         Booking booking = new Booking();
         booking.setItem(item);
         booking.setStart(request.getStart());
@@ -50,17 +50,19 @@ public class BookingServiceImpl implements BookingService {
         log.debug("Выполняем подтверждение брони");
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование по данному ID не найдено"));
-        if (booking.getItem().getOwner().getId().equals(userId)){
+        if (booking.getItem().getOwner().getId().equals(userId)) {
             if (!booking.getStatus().equals(Status.WAITING)) {
                 log.debug("Бронирование уже было обработано");
                 throw new IllegalStateException("Бронирование уже обработано");
             }
-            if(approved.equalsIgnoreCase("true")) {
+            if (approved.equalsIgnoreCase("true")) {
                 log.debug("Подтверждаем бронь");
                 booking.setStatus(Status.APPROVED);
-            } else {
+            } else if (approved.equalsIgnoreCase("false")) {
                 log.debug("Отклоняем бронь");
                 booking.setStatus(Status.REJECTED);
+            } else {
+                booking.setStatus(Status.CANCELED);
             }
             return BookingMapper.mapToBookingDto(bookingRepository.save(booking));
         } else {
@@ -71,7 +73,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto findBookingById(Long bookingId, Long userId) {
         userRepository.findById(userId)
-                .orElseThrow(() ->  new NotFoundException("Пользователь с данным ID не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование по данному ID не найдено"));
         return BookingMapper.mapToBookingDto(booking);

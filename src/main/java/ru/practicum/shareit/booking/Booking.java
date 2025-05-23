@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
-@Getter @Setter @ToString(exclude = {"booker", "item"})
+@Getter
+@Setter
+@ToString(exclude = {"booker", "item"})
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -54,9 +54,7 @@ public class ItemService {
                 .orElse(null);
         Collection<Comment> comments = commentRepository.findAllByItemId(itemId);
 
-        return ItemMapper.mapToItemDtoWithBookings(item,
-                lastBooking,
-                nextBooking,
+        return ItemMapper.mapToItemDtoWithoutBookings(item,
                 CommentMapper.mapCommentToDtoList(comments)
         );
     }
