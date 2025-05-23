@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.common.Validator;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -17,7 +16,6 @@ import java.util.Collection;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final Validator validator;
 
     public Collection<UserDto> findAll() {
         log.debug("Поиск всех пользователей");
@@ -36,9 +34,6 @@ public class UserService {
 
     public UserDto create(User user) {
         log.debug("Создание пользователя {}", user);
-        if (validator.isEmailExist(user.getEmail())) {
-            throw new RuntimeException("Данный имейл уже используется");
-        }
         User newUser = userRepository.save(user);
         return UserMapper.mapToUserDto(newUser);
     }
@@ -51,10 +46,6 @@ public class UserService {
             updUser.setName(user.getName());
         }
         if (user.getEmail() != null) {
-            if (validator.isEmailExist(user.getEmail())) {
-                throw new IllegalStateException("Данный имейл уже используется");
-            }
-            validator.updateEmail(updUser.getEmail(), user.getEmail());
             updUser.setEmail(user.getEmail());
         }
         userRepository.save(updUser);
@@ -65,7 +56,6 @@ public class UserService {
         log.debug("Удаление пользователя с ID: {}", userId);
         User userForDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
-        validator.removeUser(userForDelete);
         userRepository.delete(userForDelete);
     }
 }
