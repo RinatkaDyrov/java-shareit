@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequest;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -25,6 +26,7 @@ public class BookingServiceImpl implements BookingService {
 
 
     @Override
+    @Transactional
     public BookingDto createBooking(Long userId, BookingRequest request) {
         if (request.getEnd().isBefore(request.getStart()) || request.getEnd().equals(request.getStart())) {
             throw new RuntimeException("Указаны неверные даты бронирования");
@@ -72,11 +74,13 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto findBookingById(Long bookingId, Long userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException("Бронирование по данному ID не найдено"));
-        return BookingMapper.mapToBookingDto(booking);
+        if (userRepository.existsById(userId)){
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new NotFoundException("Бронирование по данному ID не найдено"));
+            return BookingMapper.mapToBookingDto(booking);
+        } else {
+            throw new NotFoundException("Пользователь с данным ID не найден");
+        }
     }
 
     @Override
