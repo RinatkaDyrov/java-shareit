@@ -74,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto findBookingById(Long bookingId, Long userId) {
-        if (userRepository.existsById(userId)){
+        if (userRepository.existsById(userId)) {
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new NotFoundException("Бронирование по данному ID не найдено"));
             return BookingMapper.mapToBookingDto(booking);

@@ -11,7 +11,7 @@ import java.util.Collection;
 public interface ItemRepository extends JpaRepository<Item, Long> {
     Collection<Item> findAllByOwnerId(Long userId);
 
-    @Query(""" 
+    @Query("""
             select i from Item i
             where (upper(i.name) like upper(concat('%', :text, '%'))
             or upper(i.description) like upper(concat('%', :text, '%')))
