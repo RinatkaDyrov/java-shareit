@@ -3,7 +3,9 @@ package ru.practicum.shareit.item;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.CommentRequest;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.Collection;
@@ -43,7 +45,16 @@ public class ItemController {
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItem(@PathVariable Long itemId) {
-        itemService.deleteItem(itemId);
+    public void deleteItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                           @PathVariable Long itemId) {
+        itemService.deleteItem(itemId, userId);
     }
+
+    @PostMapping("{itemId}/comment")
+    public CommentDto addComment(@PathVariable Long itemId,
+                                 @RequestHeader("X-Sharer-User-Id") Long userId,
+                                 @RequestBody CommentRequest request) {
+        return itemService.addNewComment(itemId, userId, request);
+    }
+
 }
