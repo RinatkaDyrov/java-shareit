@@ -2,12 +2,12 @@ package ru.practicum.shareit.item;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.Status;
-import ru.practicum.shareit.booking.dto.BookingShortDto;
-import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -29,6 +29,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ItemService {
+    private static final Logger log = LoggerFactory.getLogger(ItemService.class);
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
@@ -44,18 +45,8 @@ public class ItemService {
     public ItemDto findItem(Long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с заданным ID не найдена"));
-        BookingShortDto lastBooking = bookingRepository
-                .findFirstByItemIdAndEndBeforeAndStatusOrderByEndDesc(itemId, LocalDateTime.now(), Status.APPROVED)
-                .map(BookingMapper::mapToBookingShortDto)
-                .orElse(null);
-        BookingShortDto nextBooking = bookingRepository
-                .findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(itemId, LocalDateTime.now(), Status.APPROVED)
-                .map(BookingMapper::mapToBookingShortDto)
-                .orElse(null);
         Collection<Comment> comments = commentRepository.findAllByItemId(itemId);
-
-        return ItemMapper.mapToItemDtoWithoutBookings(item,
-                CommentMapper.mapCommentToDtoList(comments)
+        return ItemMapper.mapToItemDtoWithBookings(item, CommentMapper.mapCommentToDtoList(comments)
         );
     }
 
@@ -65,19 +56,20 @@ public class ItemService {
 
     @Transactional
     public ItemDto create(Item item, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с таким ID не существует"));
-        item.setOwner(user);
-        Item newItem = itemRepository.save(item);
-
-        return ItemMapper.mapToItemDto(newItem);
+        if (userRepository.existsById(userId)) {
+            item.setOwnerId(userId);
+            Item newItem = itemRepository.save(item);
+            return ItemMapper.mapToItemDto(newItem);
+        } else {
+            throw new NotFoundException("Пользователь с данным ID не найден");
+        }
     }
 
     @Transactional
     public ItemDto updateItem(Long userId, Long itemId, Item item) {
         Item updItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с заданным ID не найдена"));
-        if (!updItem.getOwner().getId().equals(userId)) {
+        if (!updItem.getOwnerId().equals(userId)) {
             throw new NotFoundException("Вносить изменения в поля может только владелец");
         }
         if (item.getName() != null) {
@@ -98,7 +90,7 @@ public class ItemService {
     public void deleteItem(Long itemId, Long userId) {
         Item itemForDeleting = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с заданным ID не найдена"));
-        if (!itemForDeleting.getOwner().getId().equals(userId)) {
+        if (!itemForDeleting.getOwnerId().equals(userId)) {
             throw new NotFoundException("Удаление доступно только владельцу");
         }
         itemRepository.delete(itemForDeleting);

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.model.User;
 
 @Entity
 @Table(name = "items")
@@ -29,10 +28,8 @@ public class Item {
     @Column(nullable = false)
     private Boolean available;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    @ToString.Exclude
-    private User owner;
+    @Column(name = "owner_id")
+    private Long ownerId;
 
     @ManyToOne
     @JoinColumn(name = "request_id")

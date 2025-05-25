@@ -52,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
         log.debug("Выполняем подтверждение брони");
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование по данному ID не найдено"));
-        if (booking.getItem().getOwner().getId().equals(userId)) {
+        if (booking.getItem().getOwnerId().equals(userId)) {
             if (!booking.getStatus().equals(Status.WAITING)) {
                 log.debug("Бронирование уже было обработано");
                 throw new IllegalStateException("Бронирование уже обработано");
@@ -90,9 +90,9 @@ public class BookingServiceImpl implements BookingService {
         bookings = switch (state) {
             case "ALL" -> bookingRepository.findByBookerIdOrderByStartDesc(userId);
             case "CURRENT" ->
-                    bookingRepository.findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now);
-            case "PAST" -> bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(userId, now);
-            case "FUTURE" -> bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(userId, now);
+                    bookingRepository.findByBookerIdAndStartBeforeAndEndAfter(userId, now, now);
+            case "PAST" -> bookingRepository.findByBookerIdAndEndBefore(userId, now);
+            case "FUTURE" -> bookingRepository.findByBookerIdAndStartAfter(userId, now);
             default -> throw new IllegalStateException("Неверный параметр state");
         };
 
