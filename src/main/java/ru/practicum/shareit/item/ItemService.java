@@ -2,10 +2,11 @@ package ru.practicum.shareit.item;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -22,7 +23,9 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -93,18 +96,18 @@ public class ItemService {
     }
 
     public CommentDto addNewComment(Long itemId, Long userId, CommentRequest request) {
+        log.debug("Запрашиваем пользователя по ID {}", userId);
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
+        log.debug("Запрашиваем вещь по ID {}", userId);
         Item commentedItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с данным ID не найдена"));
         Comment comment = CommentMapper.mapToComment(request, author, commentedItem);
-        if (!bookingRepository.existsByBookerIdAndItemIdAndEndBeforeAndStatus(userId,
-                itemId,
-                LocalDateTime.now(),
-                Status.APPROVED)
-        ) {
-            throw new ValidationException("Комментарии могут оставлять только пользователи," +
-                    " осуществлявшие аренду этой вещи");
+        log.debug("Комментарий: {}", comment);
+        List<Booking> bookings = bookingRepository.getAllUserBookings(userId, itemId, LocalDateTime.now());
+
+        if (bookings.isEmpty()) {
+            throw new ValidationException("Нужно создать бронирование, только потом комментарий");
         }
         return CommentMapper.mapCommentToDto(commentRepository.save(comment));
     }
