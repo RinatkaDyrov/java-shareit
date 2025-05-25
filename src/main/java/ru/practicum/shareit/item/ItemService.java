@@ -2,8 +2,6 @@ package ru.practicum.shareit.item;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -29,7 +27,6 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ItemService {
-    private static final Logger log = LoggerFactory.getLogger(ItemService.class);
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
@@ -46,8 +43,7 @@ public class ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с заданным ID не найдена"));
         Collection<Comment> comments = commentRepository.findAllByItemId(itemId);
-        return ItemMapper.mapToItemDtoWithBookings(item, CommentMapper.mapCommentToDtoList(comments)
-        );
+        return ItemMapper.mapToItemDtoWithBookings(item, CommentMapper.mapCommentToDtoList(comments));
     }
 
     public Collection<ItemDto> searchItems(String text) {
@@ -97,6 +93,11 @@ public class ItemService {
     }
 
     public CommentDto addNewComment(Long itemId, Long userId, CommentRequest request) {
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
+        Item commentedItem = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с данным ID не найдена"));
+        Comment comment = CommentMapper.mapToComment(request, author, commentedItem);
         if (!bookingRepository.existsByBookerIdAndItemIdAndEndBeforeAndStatus(userId,
                 itemId,
                 LocalDateTime.now(),
@@ -105,16 +106,6 @@ public class ItemService {
             throw new ValidationException("Комментарии могут оставлять только пользователи," +
                     " осуществлявшие аренду этой вещи");
         }
-        Comment comment = new Comment();
-        User author = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
-        Item commentedItem = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с данным ID не найдена"));
-        comment.setText(request.getText());
-        comment.setItem(commentedItem);
-        comment.setAuthor(author);
-        comment.setCreated(LocalDateTime.now());
-        Comment newComment = commentRepository.save(comment);
-        return CommentMapper.mapCommentToDto(newComment);
+        return CommentMapper.mapCommentToDto(commentRepository.save(comment));
     }
 }
