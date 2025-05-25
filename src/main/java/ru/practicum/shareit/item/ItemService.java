@@ -46,8 +46,7 @@ public class ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с заданным ID не найдена"));
         Collection<Comment> comments = commentRepository.findAllByItemId(itemId);
-        return ItemMapper.mapToItemDtoWithBookings(item, CommentMapper.mapCommentToDtoList(comments)
-        );
+        return ItemMapper.mapToItemDtoWithBookings(item, CommentMapper.mapCommentToDtoList(comments));
     }
 
     public Collection<ItemDto> searchItems(String text) {
@@ -97,6 +96,10 @@ public class ItemService {
     }
 
     public CommentDto addNewComment(Long itemId, Long userId, CommentRequest request) {
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
+        Item commentedItem = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с данным ID не найдена"));
         if (!bookingRepository.existsByBookerIdAndItemIdAndEndBeforeAndStatus(userId,
                 itemId,
                 LocalDateTime.now(),
@@ -106,10 +109,6 @@ public class ItemService {
                     " осуществлявшие аренду этой вещи");
         }
         Comment comment = new Comment();
-        User author = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с данным ID не найден"));
-        Item commentedItem = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с данным ID не найдена"));
         comment.setText(request.getText());
         comment.setItem(commentedItem);
         comment.setAuthor(author);

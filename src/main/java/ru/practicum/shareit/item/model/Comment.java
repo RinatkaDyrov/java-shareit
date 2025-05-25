@@ -21,9 +21,8 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String text;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "item_id", nullable = false)
-    @ToString.Exclude
     private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)
