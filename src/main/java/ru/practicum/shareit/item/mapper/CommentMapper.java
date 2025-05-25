@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.mapper;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.CommentRequest;
@@ -10,8 +11,10 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 public class CommentMapper {
     public static CommentDto mapCommentToDto(Comment comment) {
+        log.debug("Оборачиваем комментарий {} в DTO", comment);
         return new CommentDto(
                 comment.getId(),
                 comment.getText(),

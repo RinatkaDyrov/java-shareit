@@ -1,11 +1,11 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     Collection<Booking> findAllByItemOwnerIdOrderByStatusAscStartAsc(Long ownerId);
@@ -21,20 +21,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByBookerIdAndStartAfter(Long userId, LocalDateTime now);
 
-    boolean existsByBookerIdAndItemIdAndEndBeforeAndStatus(
-            Long bookerId,
-            Long itemId,
-            LocalDateTime now,
-            Status status
-    );
-
-    Optional<Booking> findFirstByItemIdAndEndBeforeAndStatusOrderByEndDesc(
-            Long itemId,
-            LocalDateTime now,
-            Status status);
-
-    Optional<Booking> findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
-            Long itemId,
-            LocalDateTime now,
-            Status status);
+    @Query("""
+            SELECT b FROM Booking b
+            JOIN Item i ON b.item.id = i.id
+            WHERE b.booker.id = :userId
+            AND i.id = :itemId AND b.status = 'APPROVED'
+            AND b.end < :now
+            """)
+    List<Booking> getAllUserBookings(Long userId, Long itemId, LocalDateTime now);
 }
