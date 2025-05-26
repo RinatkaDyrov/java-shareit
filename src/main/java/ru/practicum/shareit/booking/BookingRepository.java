@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -29,4 +30,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             AND b.end < :now
             """)
     List<Booking> getAllUserBookings(Long userId, Long itemId, LocalDateTime now);
+
+    @Query("SELECT COUNT(b) > 0 FROM Booking b " +
+            "WHERE b.booker.id = :userId " +
+            "AND b.item.id = :itemId " +
+            "AND b.end < :now " +
+            "AND b.status <> 'REJECTED'")
+    boolean existsPastBookingExcludingRejected(@Param("userId") Long userId,
+                                               @Param("itemId") Long itemId,
+                                               @Param("now") LocalDateTime now);
 }
