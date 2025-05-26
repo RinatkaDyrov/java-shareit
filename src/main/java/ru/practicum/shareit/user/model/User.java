@@ -19,7 +19,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @Email(message = "Неверный формат электронной почты")
     private String email;
 }
