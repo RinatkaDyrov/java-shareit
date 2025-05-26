@@ -93,6 +93,7 @@ public class ItemService {
         itemRepository.delete(itemForDeleting);
     }
 
+    @Transactional
     public CommentDto addNewComment(Long itemId, Long userId, CommentRequest request) {
         log.debug("Запрашиваем пользователя по ID {}", userId);
         User author = userRepository.findById(userId)
