@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -23,7 +22,6 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -104,9 +102,9 @@ public class ItemService {
                 .orElseThrow(() -> new NotFoundException("Вещь с данным ID не найдена"));
         Comment comment = CommentMapper.mapToComment(request, author, commentedItem);
         log.debug("Комментарий: {}", comment);
-        List<Booking> bookings = bookingRepository.getAllUserBookings(userId, itemId, LocalDateTime.now());
-
-        if (bookings.isEmpty()) {
+        if (!bookingRepository.existsPastBookingExcludingRejected(userId,
+                itemId,
+                LocalDateTime.now())) {
             throw new ValidationException("Нужно создать бронирование, только потом комментарий");
         }
         return CommentMapper.mapCommentToDto(commentRepository.save(comment));
