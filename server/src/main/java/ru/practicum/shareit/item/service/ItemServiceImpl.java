@@ -125,6 +125,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemShortDto> searchItemsWithShortDto(String text) {
-        return text.isEmpty() ? Collections.emptyList() : ItemMapper.mapToShortItemDtoList(itemRepository.search(text));
+        return ItemMapper.mapToShortItemDtoList(itemRepository.search(text));
     }
 }
