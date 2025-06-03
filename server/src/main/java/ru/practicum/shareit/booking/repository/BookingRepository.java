@@ -35,7 +35,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
             "WHERE b.booker.id = :userId " +
             "AND b.item.id = :itemId " +
-            "AND b.start < :now " +
+            "AND b.end < :now " +
             "AND b.status <> 'REJECTED'")
     boolean existsPastBookingExcludingRejected(@Param("userId") Long userId,
                                                @Param("itemId") Long itemId,
