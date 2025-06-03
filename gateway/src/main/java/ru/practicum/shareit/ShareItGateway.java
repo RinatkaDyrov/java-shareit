@@ -6,8 +6,8 @@ import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication
 public class ShareItGateway {
-	public static void main(String[] args) {
-		SpringApplication.run(ShareItGateway.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ShareItGateway.class, args);
+    }
 
 }

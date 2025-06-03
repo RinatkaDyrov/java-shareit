@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.service;
 
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -118,7 +117,7 @@ public class ItemServiceImpl implements ItemService {
         if (!bookingRepository.existsPastBookingExcludingRejected(userId,
                 itemId,
                 LocalDateTime.now())) {
-            throw new ValidationException("Нужно создать бронирование, только потом комментарий");
+            throw new RuntimeException("Нужно создать бронирование, только потом комментарий");
         }
         return CommentMapper.mapCommentToDto(commentRepository.save(comment));
     }
